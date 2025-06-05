@@ -46,6 +46,8 @@ app.*.map.json
 
 google-services.json
 
+.env
+
 # Keystore files
 *.jks
 key.properties

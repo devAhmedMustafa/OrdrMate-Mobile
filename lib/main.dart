@@ -9,19 +9,21 @@ import 'package:ordrmate/services/auth_service.dart';
 import 'package:ordrmate/services/order_service.dart';
 import 'package:ordrmate/ui/theme/app_theme.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   final statusController = StreamController<String>.broadcast();
 
   try {
     WidgetsFlutterBinding.ensureInitialized();
+    await dotenv.load();
     await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: "AIzaSyCVbxN_ticb2plxpxexR3lKDg5TmymBQq8",
-        appId: "1:95702205905:android:69f33023c95148e4c88cf0",
-        messagingSenderId: "95702205905",
-        projectId: "ordrmate",
-        storageBucket: "ordrmate.firebasestorage.app",
+      options: FirebaseOptions(
+        apiKey: dotenv.env['API_KEY']!,
+        appId: dotenv.env['APP_ID']!,
+        messagingSenderId: dotenv.env['MESSAGING_SENDER_ID']!,
+        projectId: dotenv.env['PROJECT_ID']!,
+        storageBucket: dotenv.env['STORAGE_BUCKET']!,
       ),
     );
     runApp(App(statusController: statusController));
