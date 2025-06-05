@@ -28,13 +28,23 @@ class RestaurantMap extends StatelessWidget {
     return FlutterMap(
       mapController: mapController,
       options: MapOptions(
-        center: currentLocation ?? LatLng(avgLat, avgLng),
-        zoom: 12.0,
-        interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+        initialCenter: currentLocation ?? LatLng(avgLat, avgLng),
+        initialZoom: 12.0,
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+        ),
+        onMapReady: () {
+          if (currentLocation != null) {
+            mapController.move(currentLocation!, 12.0);
+          } else {
+            mapController.move(LatLng(avgLat, avgLng), 12.0);
+          }
+        },
       ),
       children: [
         TileLayer(
           urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+          subdomains: const ['a', 'b', 'c', 'd'],
           userAgentPackageName: 'com.ordrmate.customer',
         ),
 

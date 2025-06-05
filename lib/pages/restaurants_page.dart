@@ -25,6 +25,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
   String? errorMessage;
   LatLng? userLocation;
   MapController mapController = MapController();
+  final zoomLevel = 13.0;
 
   @override
   void initState() {
@@ -36,9 +37,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
   Future<void> loadBranches() async {
     try {
       final branches = await restaurantService.getAllBranches();
-      if (kDebugMode) {
-        print('Loaded branches: ${branches.length}');
-      }
+        debugPrint('Loaded branches: ${branches.length}');
       setState(() {
         _branches = branches;
         isLoading = false;
@@ -64,10 +63,6 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
       setState(() {
         userLocation = LatLng(position.latitude, position.longitude);
       });
-
-      if (userLocation != null) {
-        mapController.move(userLocation!, 13.0);
-      }
 
     }
     catch (e) {
