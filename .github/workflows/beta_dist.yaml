@@ -42,7 +42,7 @@ jobs:
       - name: Decode Firebase credentials
         run: |
           echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 --decode > ${{ github.workspace }}/firebase.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=firebase.json" >> $GITHUB_ENV
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/firebase.json" >> $GITHUB_ENV
 
       - name: Setup google-services.json
         run: |
