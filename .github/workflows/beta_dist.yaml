@@ -45,7 +45,7 @@ jobs:
 
       - name: Decode release.keystore.jks
         run: |
-          echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > android/app/release.keystore.jks
+          echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > android/app/release-key.jks
 
 
       - name: Build APK
