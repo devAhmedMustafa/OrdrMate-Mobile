@@ -40,6 +40,7 @@ dependencies:
   http: ^1.1.0
   firebase_core: ^2.16.0
   firebase_messaging: ^14.0.0
+  flutter_dotenv: ^5.1.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the Icons class for iOS style icons.
@@ -72,6 +73,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - .env
 
   # To add custom fonts to your application, add a fonts section, like this:
   # fonts:
@@ -105,7 +107,7 @@ flutter_native_splash:
   ios: true
   web: false # Set to true if you need a splash screen for web
 
-  android_gravity: fill
+  android_gravity: center
   ios_content_mode: scaleAspectFit
 
   android_12: # Android 12 specific settings
