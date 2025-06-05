@@ -39,6 +39,11 @@ jobs:
       - name: Decode .env
         run: echo "${{ secrets.DOTENV_BASE64 }}" | base64 --decode > .env
 
+      - name: Decode key.properties
+        run: |
+          echo "${{ secrets.KEY_PROPERTIES }}" | base64 --decode > android/key.properties
+
+
 
       - name: Build APK
         run: flutter build apk --release
