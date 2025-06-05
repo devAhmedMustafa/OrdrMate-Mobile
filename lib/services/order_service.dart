@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:ordrmate/utils/ordrmate.api.dart';
-import '../models/branch.dart';
+import '../models/Branch.dart';
 import '../models/Order.dart';
 import 'auth_service.dart';
 import 'package:flutter/foundation.dart';
