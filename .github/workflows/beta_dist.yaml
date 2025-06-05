@@ -36,6 +36,10 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
+      - name: Decode .env
+        run: echo "${{ secrets.DOTENV_BASE64 }}" | base64 --decode > .env
+
+
       - name: Build APK
         run: flutter build apk --release
 
