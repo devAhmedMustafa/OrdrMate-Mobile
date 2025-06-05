@@ -4,7 +4,7 @@ import 'dart:convert';
 
 class OrdrmateApi {
 
-  static final String _baseUrl = kReleaseMode
+  static const String _baseUrl = kReleaseMode
       ? "https://ordrmate.starplusgames.com/api"
       : "http://10.0.2.2:5126/api";
 

@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:ordrmate/utils/ordrmate.api.dart';
 
 class FirebaseApi {
   final _firebaseMessaging = FirebaseMessaging.instance;
-  final String _baseUrl = "http://10.0.2.2:5126/api";
 
   Future<void> initNotifications(String userId) async {
     await _firebaseMessaging.requestPermission();
@@ -14,16 +14,16 @@ class FirebaseApi {
     if (token != null) {
       debugPrint("Firebase Messaging Token: $token");
 
-      final response = await http.post(
-        Uri.parse("$_baseUrl/Customer/firebase-token"),
+      final response = await OrdrmateApi.post(
+        "Customer/firebase-token",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: jsonEncode({
+        body: {
           "token": token,
           "userId": userId
-        })
+        }
       );
 
       if (response.statusCode == 200) {
