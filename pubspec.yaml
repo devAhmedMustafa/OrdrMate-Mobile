@@ -1,0 +1,131 @@
+name: ordrmate
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.0
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  provider: ^6.1.1
+  google_sign_in: ^6.1.6
+  flutter_secure_storage: ^9.0.0
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  geolocator: ^11.0.0
+  http: ^1.1.0
+  firebase_core: ^2.16.0
+  firebase_messaging: ^14.0.0
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the Icons class for iOS style icons.
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set is distributed with
+  # package:lints at /dev/bots/analyze.dart. Use that set as the base, and
+  # add additions to it.
+  flutter_lints: ^2.0.0
+
+  # Add this line for flutter_launcher_icons
+  flutter_launcher_icons: "^0.13.1"
+
+  # Add this line for flutter_native_splash
+  flutter_native_splash: "^2.3.10"
+
+# For information on the generic Dart part of this file, see the
+# following page:
+# https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/images/
+
+  # To add custom fonts to your application, add a fonts section, like this:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/
+
+# Configuration for flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/OrdrMate.png" # <--- Place your app icon image here and update the path
+  min_sdk_android: 21 # android min sdk min:16, default 21
+
+# Configuration for flutter_native_splash
+flutter_native_splash:
+  color: "#FFFFFF" # <--- Set your splash screen background color
+  image: "assets/images/OrdrMate.png" # <--- Using the path you provided
+
+  android: true
+  ios: true
+  web: false # Set to true if you need a splash screen for web
+
+  android_gravity: fill
+  ios_content_mode: scaleAspectFit
+
+  android_12: # Android 12 specific settings
+    image: "assets/images/OrdrMate.png"
+    icon_background_color: "#FFFFFF"
+    # image_dark: "assets/images/OrdrMate_dark.png" # Optional dark mode image
+    # icon_background_color_dark: "#000000" # Optional dark mode background
+
+  # Optionally specify different colors and images for dark mode
+  # color_dark: "#000000"
+  # image_dark: "assets/images/OrdrMate_dark.png"
+
+  # Optional: Change the placement of the splash image. Center is default.
+  # android_gravity: center
+  # ios_content_mode: scaleAspectFit
+
+  # Optional: Show a fullscreen splash screen.
+  # fullscreen: true
+
+  # Optional: Specify a different image for the splash screen on iOS.
+  # On iOS, the splash image is usually defined in LaunchScreen.storyboard.
+  # This package can help configure it, but sometimes manual adjustments in Xcode are needed.
+  # ios_image: "LaunchImage"
