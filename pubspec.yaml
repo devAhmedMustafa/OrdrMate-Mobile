@@ -105,7 +105,7 @@ flutter_native_splash:
   ios: true
   web: false # Set to true if you need a splash screen for web
 
-  android_gravity: fill
+  android_gravity: center
   ios_content_mode: scaleAspectFit
 
   android_12: # Android 12 specific settings
