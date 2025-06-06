@@ -36,7 +36,7 @@ class OrderService extends ChangeNotifier {
     }
   }
 
-  Future<void> placeOrder(Order order) async {
+  Future<String> placeOrder(Order order) async {
     try {
       final token = await _authService.getToken();
       if (token == null) {
@@ -54,6 +54,13 @@ class OrderService extends ChangeNotifier {
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception('Failed to place order : ${response.statusCode}');
+      }
+
+      final Map<String, dynamic> data = json.decode(response.body);
+      if (data.containsKey('orderIntentId') && data.containsKey('redirectUrl')) {
+        return OrderIntentResponse.fromJson(data).redirectUrl;
+      } else {
+        throw Exception('Invalid response format');
       }
     } catch (e) {
       throw Exception('Failed to connect to the server: $e');
@@ -143,4 +150,21 @@ class OrderService extends ChangeNotifier {
     }
   }
 
+}
+
+class OrderIntentResponse {
+  final String id;
+  final String redirectUrl;
+
+  OrderIntentResponse({
+    required this.id,
+    required this.redirectUrl,
+  });
+
+  factory OrderIntentResponse.fromJson(Map<String, dynamic> json) {
+    return OrderIntentResponse(
+      id: json['orderIntentId'] as String,
+      redirectUrl: json['redirectUrl'] as String,
+    );
+  }
 }

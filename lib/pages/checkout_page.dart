@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ordrmate/components/payment_webview.dart';
+import 'package:ordrmate/enums/payment_methods.dart';
 import 'package:ordrmate/providers/cart_provider.dart';
 import 'package:provider/provider.dart';
 import '../models/Branch.dart';
@@ -27,7 +29,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   bool _isLoading = false;
   String? _error;
   OrderType _orderType = OrderType.takeaway;
-  String _paymentMethod = 'cash';
+  PaymentMethod _paymentMethod = PaymentMethod.cash;
   int _seats = 1;
 
   Future<void> _placeOrder() async {
@@ -44,17 +46,34 @@ class _CheckoutPageState extends State<CheckoutPage> {
         items: widget.items.map((item) => item.toOrderItem()).toList(),
         createdAt: DateTime.now(),
         orderType: _orderType,
-        paymentMethod: _paymentMethod,
+        paymentMethod: paymentMethodToString(_paymentMethod),
       );
 
-      await orderService.placeOrder(order);
+      var redirectUrl = await orderService.placeOrder(order);
 
-      if (mounted) {
-        // Clean up the cart after placing the order
-        final cartProvider = Provider.of<CartProvider>(context, listen: false);
-        cartProvider.clearCart(widget.selectedBranch.restaurantId);
-        Navigator.of(context).pop(true); // Return true to indicate success
+      if (!mounted) return;
+
+      // Check if redirect URL is not empty (Not cash payment)
+      if (redirectUrl.isNotEmpty && redirectUrl != 'null') {
+        final paymentResult = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (context) => PaymentWebView(paymentUrl: redirectUrl),
+          ),
+        );
+
+        if (paymentResult == null || !paymentResult) {
+          setState(() {
+            _isLoading = false;
+            _error = 'Payment failed or cancelled';
+          });
+          return;
+        }
       }
+
+      // Clean up the cart after placing the order
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      cartProvider.clearCart(widget.selectedBranch.restaurantId);
+      Navigator.of(context).pop(true); // Return true to indicate success
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -113,6 +132,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               : ListView(
                   padding: const EdgeInsets.all(AppTheme.spacingM),
                   children: [
+
                     // Order type selection
                     AppCard(
                       child: Column(
@@ -207,7 +227,58 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         ],
                       ),
                     ),
+
                     const SizedBox(height: AppTheme.spacingM),
+
+                    // Payment method selection
+
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Payment Method',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: AppTheme.spacingM),
+                          RadioListTile<PaymentMethod>(
+                            title: const Text(
+                              'Cash',
+                              style: TextStyle(color: AppTheme.textPrimaryColor),
+                            ),
+                            value: PaymentMethod.cash,
+                            groupValue: _paymentMethod,
+                            activeColor: AppTheme.primaryColor,
+                            onChanged: (value) {
+                              setState(() {
+                                _paymentMethod = value!;
+                              });
+                            },
+                          ),
+                          RadioListTile<PaymentMethod>(
+                            title: const Text(
+                              'Credit/Debit Card',
+                              style: TextStyle(color: AppTheme.textPrimaryColor),
+                            ),
+                            value: PaymentMethod.card,
+                            groupValue: _paymentMethod,
+                            activeColor: AppTheme.primaryColor,
+                            onChanged: (value) {
+                              setState(() {
+                                _paymentMethod = value!;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingM),
+
                     // Order summary
                     AppCard(
                       child: Column(
