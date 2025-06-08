@@ -6,7 +6,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:ordrmate/components/branch_info_sheet.dart';
 import 'package:ordrmate/components/restaurant_map.dart';
 import 'package:ordrmate/models/Branch.dart';
+import 'package:ordrmate/services/auth_service.dart';
 import 'package:ordrmate/services/restaurant_service.dart';
+import 'package:provider/provider.dart';
 import '../ui/theme/app_theme.dart';
 
 class RestaurantsPage extends StatefulWidget {
@@ -18,7 +20,6 @@ class RestaurantsPage extends StatefulWidget {
 
 class _RestaurantsPageState extends State<RestaurantsPage> {
 
-  final RestaurantService restaurantService = RestaurantService();
 
   List<Branch> _branches = [];
   bool isLoading = true;
@@ -36,6 +37,8 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
 
   Future<void> loadBranches() async {
     try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final RestaurantService restaurantService = RestaurantService(authService);
       final branches = await restaurantService.getAllBranches();
         debugPrint('Loaded branches: ${branches.length}');
       setState(() {

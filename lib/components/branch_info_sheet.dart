@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ordrmate/pages/restaurant_profile_page.dart';
+import 'package:ordrmate/services/auth_service.dart';
+import 'package:provider/provider.dart';
 import '../models/Branch.dart';
 import '../services/restaurant_service.dart';
 import '../ui/theme/app_theme.dart';
@@ -19,7 +21,6 @@ class BranchInfoSheet extends StatefulWidget {
 }
 
 class _BranchInfoSheetState extends State<BranchInfoSheet> {
-  final RestaurantService _restaurantService = RestaurantService();
   BranchInfo? _branchInfo;
   bool _isLoading = true;
   String? _error;
@@ -32,6 +33,8 @@ class _BranchInfoSheetState extends State<BranchInfoSheet> {
 
   Future<void> _loadBranchInfo() async {
     try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final RestaurantService _restaurantService = RestaurantService(authService);
       final branchInfo = await _restaurantService.getBranchInfo(widget.branch.id);
       setState(() {
         _branchInfo = branchInfo;

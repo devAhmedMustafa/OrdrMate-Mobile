@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ordrmate/pages/cart_page.dart';
+import 'package:ordrmate/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import '../models/Restaurant.dart';
 import '../models/Item.dart';
@@ -32,7 +33,7 @@ class RestaurantProfilePage extends StatefulWidget {
 }
 
 class _RestaurantProfilePageState extends State<RestaurantProfilePage> {
-  final RestaurantService _restaurantService = RestaurantService();
+  // Initialize the restaurant service
   Restaurant? _restaurant;
   List<Item> _items = [];
   List<Category> _categories = [];
@@ -56,6 +57,9 @@ class _RestaurantProfilePageState extends State<RestaurantProfilePage> {
     });
 
     try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final RestaurantService _restaurantService = RestaurantService(authService);
+
       final restaurant = await _restaurantService.getRestaurantDetails(widget.restaurantId);
       final items = await _restaurantService.getRestaurantItems(widget.restaurantId);
       final categories = await _restaurantService.getRestaurantCategories(widget.restaurantId);
