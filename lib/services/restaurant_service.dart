@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:ordrmate/models/Branch.dart';
 import 'package:ordrmate/models/Item.dart';
 import 'package:ordrmate/models/Restaurant.dart';
@@ -28,10 +27,17 @@ class RestaurantService {
   Future<Restaurant> getRestaurantDetails(String restaurantId) async {
     try {
       final response = await OrdrmateApi.get('Restaurant/$restaurantId');
+      final profileResponse = await OrdrmateApi.get('Restaurant/profile/$restaurantId');
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && profileResponse.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        return Restaurant.fromJson(jsonData);
+        final profileData = json.decode(profileResponse.body);
+        final Map<String, String> combinedData = {
+          ...jsonData,
+          ...profileData,
+        };
+
+        return Restaurant.fromJson(combinedData);
       } else {
         throw Exception('Failed to load restaurant details');
       }
@@ -57,7 +63,7 @@ class RestaurantService {
 
   Future<List<Item>> getRestaurantItems(String restaurantId) async {
     try {
-      final response = await OrdrmateApi.get('Item/restaurant/$restaurantId');
+      final response = await OrdrmateApi.get('Item/branch/$restaurantId');
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);

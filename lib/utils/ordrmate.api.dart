@@ -18,4 +18,9 @@ class OrdrmateApi {
     return await http.post(uri, headers: headers, body: jsonEncode(body));
   }
 
+  static Future<http.Response> put(String endpoint, {Map<String, String>? headers, Object? body}) async {
+    final uri = Uri.parse("$_baseUrl/$endpoint");
+    return await http.put(uri, headers: headers, body: jsonEncode(body));
+  }
+
 }

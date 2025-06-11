@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ordrmate/models/Restaurant.dart';
 import '../models/Branch.dart';
 import '../ui/theme/app_theme.dart';
 
@@ -9,6 +10,8 @@ class RestaurantMap extends StatelessWidget {
   final LatLng? currentLocation;
   final MapController mapController;
   final Function(Branch) onBranchTap;
+  // Map from restaurant ID to restaurant icon
+  final Map<String, Restaurant> restaurantIcons;
 
   const RestaurantMap({
     super.key,
@@ -16,6 +19,7 @@ class RestaurantMap extends StatelessWidget {
     required this.currentLocation,
     required this.mapController,
     required this.onBranchTap,
+    required this.restaurantIcons,
   });
 
   @override
@@ -35,9 +39,9 @@ class RestaurantMap extends StatelessWidget {
         ),
         onMapReady: () {
           if (currentLocation != null) {
-            mapController.move(currentLocation!, 12.0);
+            mapController.move(currentLocation!, 16.0);
           } else {
-            mapController.move(LatLng(avgLat, avgLng), 12.0);
+            mapController.move(LatLng(avgLat, avgLng), 16.0);
           }
         },
       ),
@@ -82,6 +86,12 @@ class RestaurantMap extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          restaurantIcons[branch.restaurantId]!.logoImage != null ?
+                          Image.network(
+                            restaurantIcons[branch.restaurantId]!.logoImage!,
+                            fit: BoxFit.cover,
+                          )
+                          :
                           Container(
                             padding: const EdgeInsets.all(AppTheme.spacingS),
                             decoration: BoxDecoration(
@@ -95,7 +105,7 @@ class RestaurantMap extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.restaurant,
                               color: AppTheme.surfaceColor,
                               size: 28,

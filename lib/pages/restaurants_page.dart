@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:ordrmate/components/branch_info_sheet.dart';
 import 'package:ordrmate/components/restaurant_map.dart';
 import 'package:ordrmate/models/Branch.dart';
+import 'package:ordrmate/models/Restaurant.dart';
 import 'package:ordrmate/services/auth_service.dart';
 import 'package:ordrmate/services/restaurant_service.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +27,8 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
   String? errorMessage;
   LatLng? userLocation;
   MapController mapController = MapController();
-  final zoomLevel = 13.0;
+  Map<String, Restaurant> restaurantIcons = {};
+  final zoomLevel = 2.0;
 
   @override
   void initState() {
@@ -40,7 +42,14 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
       final authService = Provider.of<AuthService>(context, listen: false);
       final RestaurantService restaurantService = RestaurantService(authService);
       final branches = await restaurantService.getAllBranches();
-        debugPrint('Loaded branches: ${branches.length}');
+
+      for (final branch in branches) {
+        if (restaurantIcons.containsKey(branch.restaurantId)) continue;
+        final restaurant = await restaurantService.getRestaurantDetails(branch.restaurantId);
+        restaurantIcons[branch.restaurantId] = restaurant;
+      }
+
+      debugPrint('Loaded branches: ${branches.length}');
       setState(() {
         _branches = branches;
         isLoading = false;
@@ -91,7 +100,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppTheme.backgroundColor,
         body: Center(
           child: CircularProgressIndicator(
@@ -110,7 +119,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
             children: [
               Text(
                 errorMessage!,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppTheme.textPrimaryColor,
                   fontSize: 16,
                 ),
@@ -140,6 +149,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
             currentLocation: userLocation,
             mapController: mapController,
             onBranchTap: _handleBranchTap,
+            restaurantIcons: restaurantIcons,
           ),
         ],
       ),

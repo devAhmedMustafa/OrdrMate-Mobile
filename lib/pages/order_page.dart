@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/order_service.dart';
 import '../models/Order.dart';
 import '../ui/theme/app_theme.dart';
+import 'invoice_page.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final String orderId;
@@ -58,8 +59,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: Text(
-          'Order #${widget.orderId}',
-          style: TextStyle(
+          'Order - ${_order?.orderType == OrderType.takeaway ? 'Takeaway ${_order?.orderNumber}' : 'Table ${_order?.tableNumber}'}',
+          style: const TextStyle(
             color: AppTheme.textPrimaryColor,
             fontWeight: FontWeight.bold,
           ),
@@ -68,7 +69,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         elevation: 0,
       ),
       body: _isLoading
-          ? Center(
+          ? const Center(
               child: CircularProgressIndicator(
                 color: AppTheme.primaryColor,
               ),
@@ -78,21 +79,21 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.error_outline,
                         color: AppTheme.errorColor,
                         size: 48,
                       ),
-                      SizedBox(height: AppTheme.spacingM),
+                      const SizedBox(height: AppTheme.spacingM),
                       Text(
                         'Error: $_error',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppTheme.errorColor,
                           fontSize: 16,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      SizedBox(height: AppTheme.spacingL),
+                      const SizedBox(height: AppTheme.spacingL),
                       ElevatedButton.icon(
                         onPressed: _loadOrderDetails,
                         icon: const Icon(Icons.refresh),
@@ -106,7 +107,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   ),
                 )
               : _order == null
-                  ? Center(
+                  ? const Center(
                       child: Text(
                         'Order not found',
                         style: TextStyle(
@@ -115,203 +116,235 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         ),
                       ),
                     )
-                  : ListView(
-                      padding: EdgeInsets.all(AppTheme.spacingM),
+                  : Column(
                       children: [
-                        // Order status
-                        Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(AppTheme.spacingM),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Status',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.textPrimaryColor,
-                                  ),
+                        Expanded(
+                          child: ListView(
+                            padding: const EdgeInsets.all(AppTheme.spacingM),
+                            children: [
+                              // Order status
+                              Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
                                 ),
-                                SizedBox(height: AppTheme.spacingS),
-                                Text(
-                                  _order!.status ?? 'Unknown',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondaryColor,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: AppTheme.spacingM),
-                        // Estimated time
-                        if (_estimatedTime != null)
-                          Card(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.all(AppTheme.spacingM),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Estimated Time',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.textPrimaryColor,
-                                    ),
-                                  ),
-                                  SizedBox(height: AppTheme.spacingS),
-                                  Text(
-                                    '${_estimatedTime!.toStringAsFixed(2)} minutes',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondaryColor,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        SizedBox(height: AppTheme.spacingM),
-                        // Order type and payment
-                        Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(AppTheme.spacingM),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Order Details',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.textPrimaryColor,
-                                  ),
-                                ),
-                                SizedBox(height: AppTheme.spacingS),
-                                Text(
-                                  'Type: ${_order!.orderType.name}',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondaryColor,
-                                  ),
-                                ),
-                                Text(
-                                  'Payment: ${_order!.paymentMethod}',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondaryColor,
-                                  ),
-                                ),
-                                if (_order!.seats != null)
-                                  Text(
-                                    'Seats: ${_order!.seats}',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondaryColor,
-                                    ),
-                                  ),
-                                if (_order!.orderNumber != null)
-                                  Text(
-                                    'Order #: ${_order!.orderNumber}',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondaryColor,
-                                    ),
-                                  ),
-                                if (_order!.tableNumber != null)
-                                  Text(
-                                    'Table #: ${_order!.tableNumber}',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondaryColor,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: AppTheme.spacingM),
-                        // Order items
-                        Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(AppTheme.spacingM),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Items',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.textPrimaryColor,
-                                  ),
-                                ),
-                                SizedBox(height: AppTheme.spacingS),
-                                if (_order!.items != null && _order!.items!.isNotEmpty)
-                                  ..._order!.items!.map((item) {
-                                    return ListTile(
-                                      title: Text(
-                                        "${item.quantity} x ${item.name}",
+                                child: Padding(
+                                  padding: const EdgeInsets.all(AppTheme.spacingM),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Status',
                                         style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
                                           color: AppTheme.textPrimaryColor,
                                         ),
                                       ),
-                                      trailing: Text(
-                                        '\$${(item.price * item.quantity).toStringAsFixed(2)}',
-                                        style: TextStyle(
-                                          color: AppTheme.primaryColor,
-                                          fontWeight: FontWeight.bold,
+                                      const SizedBox(height: AppTheme.spacingS),
+                                      Text(
+                                        _order!.status ?? 'Unknown',
+                                        style: const TextStyle(
+                                          color: AppTheme.textSecondaryColor,
+                                          fontSize: 16,
                                         ),
                                       ),
-                                    );
-                                  })
-                                else
-                                  Text(
-                                    'No items in this order',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondaryColor,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: AppTheme.spacingM),
+                              // Estimated time
+                              if (_estimatedTime != null)
+                                Card(
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(AppTheme.spacingM),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Estimated Time',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppTheme.textPrimaryColor,
+                                          ),
+                                        ),
+                                        const SizedBox(height: AppTheme.spacingS),
+                                        Text(
+                                          '${_estimatedTime!.toStringAsFixed(2)} minutes',
+                                          style: const TextStyle(
+                                            color: AppTheme.textSecondaryColor,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                Divider(color: AppTheme.textSecondaryColor.withOpacity(0.2)),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Total',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppTheme.textPrimaryColor,
-                                      ),
-                                    ),
-                                    Text(
-                                      '\$${_order!.totalAmount.toStringAsFixed(2)}',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppTheme.primaryColor,
-                                      ),
-                                    ),
-                                  ],
                                 ),
-                              ],
-                            ),
+                              const SizedBox(height: AppTheme.spacingM),
+                              // Order details
+                              Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(AppTheme.spacingM),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Order Details',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.textPrimaryColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: AppTheme.spacingS),
+                                      Text(
+                                        'Type: ${_order!.orderType.name}',
+                                        style: const TextStyle(
+                                          color: AppTheme.textSecondaryColor,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Payment: ${_order!.paymentMethod}',
+                                        style: const TextStyle(
+                                          color: AppTheme.textSecondaryColor,
+                                        ),
+                                      ),
+                                      if (_order!.seats != null)
+                                        Text(
+                                          'Seats: ${_order!.seats}',
+                                          style: const TextStyle(
+                                            color: AppTheme.textSecondaryColor,
+                                          ),
+                                        ),
+                                      if (_order!.orderNumber != null)
+                                        Text(
+                                          'Order #: ${_order!.orderNumber}',
+                                          style: const TextStyle(
+                                            color: AppTheme.textSecondaryColor,
+                                          ),
+                                        ),
+                                      if (_order!.tableNumber != null)
+                                        Text(
+                                          'Table #: ${_order!.tableNumber}',
+                                          style: const TextStyle(
+                                            color: AppTheme.textSecondaryColor,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: AppTheme.spacingM),
+                              // Order items
+                              Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(AppTheme.spacingM),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Items',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.textPrimaryColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: AppTheme.spacingS),
+                                      if (_order!.items != null && _order!.items!.isNotEmpty)
+                                        ..._order!.items!.map((item) {
+                                          return ListTile(
+                                            title: Text(
+                                              "${item.quantity} x ${item.name}",
+                                              style: const TextStyle(
+                                                color: AppTheme.textPrimaryColor,
+                                              ),
+                                            ),
+                                            trailing: Text(
+                                              '\$${(item.price * item.quantity).toStringAsFixed(2)}',
+                                              style: const TextStyle(
+                                                color: AppTheme.primaryColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          );
+                                        })
+                                      else
+                                        const Text(
+                                          'No items in this order',
+                                          style: TextStyle(
+                                            color: AppTheme.textSecondaryColor,
+                                          ),
+                                        ),
+                                      Divider(color: AppTheme.textSecondaryColor.withOpacity(0.2)),
+
+                                      // Total amount
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Total',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.textPrimaryColor,
+                                            ),
+                                          ),
+                                          Text(
+                                            '\$${_order!.totalAmount.toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.primaryColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        if (_order!.status?.toLowerCase() == 'ready')
+                          Padding(
+                            padding: const EdgeInsets.all(AppTheme.spacingM),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => InvoicePage(orderId: _order!.id),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.receipt_long),
+                                label: const Text('Pick Order'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryColor,
+                                  foregroundColor: AppTheme.surfaceColor,
+                                  padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingM),
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
     );

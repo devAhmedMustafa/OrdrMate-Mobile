@@ -12,9 +12,7 @@ import '../components/restaurant_header.dart';
 import '../components/category_tabs.dart';
 import '../components/menu_item_grid.dart';
 import '../ui/components/app_button.dart';
-import '../ui/components/app_card.dart';
 import '../ui/theme/app_theme.dart';
-// import '../pages/cart_page.dart';
 
 class RestaurantProfilePage extends StatefulWidget {
   final String restaurantId;
@@ -58,12 +56,12 @@ class _RestaurantProfilePageState extends State<RestaurantProfilePage> {
 
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
-      final RestaurantService _restaurantService = RestaurantService(authService);
+      final RestaurantService restaurantService = RestaurantService(authService);
 
-      final restaurant = await _restaurantService.getRestaurantDetails(widget.restaurantId);
-      final items = await _restaurantService.getRestaurantItems(widget.restaurantId);
-      final categories = await _restaurantService.getRestaurantCategories(widget.restaurantId);
-      final branchInfo = await _restaurantService.getBranchInfo(widget.branchId);
+      final restaurant = await restaurantService.getRestaurantDetails(widget.restaurantId);
+      final items = await restaurantService.getRestaurantItems(widget.selectedBranch.id);
+      final categories = await restaurantService.getRestaurantCategories(widget.restaurantId);
+      final branchInfo = await restaurantService.getBranchInfo(widget.branchId);
 
       if (!mounted) return;
 
@@ -118,7 +116,7 @@ class _RestaurantProfilePageState extends State<RestaurantProfilePage> {
               return Stack(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.shopping_cart, color: AppTheme.textPrimaryColor),
+                    icon: const Icon(Icons.shopping_cart, color: AppTheme.textPrimaryColor),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -228,7 +226,7 @@ class _RestaurantProfilePageState extends State<RestaurantProfilePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'Error loading restaurant details',
               style: TextStyle(
                 color: AppTheme.textPrimaryColor,
@@ -238,7 +236,7 @@ class _RestaurantProfilePageState extends State<RestaurantProfilePage> {
             const SizedBox(height: AppTheme.spacingM),
             Text(
               _error!,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppTheme.textSecondaryColor,
                 fontSize: 14,
               ),
@@ -270,8 +268,8 @@ class _RestaurantProfilePageState extends State<RestaurantProfilePage> {
                 ),
                 if (_branchInfo != null)
                   Container(
-                    margin: EdgeInsets.all(AppTheme.spacingM),
-                    padding: EdgeInsets.all(AppTheme.spacingM),
+                    margin: const EdgeInsets.all(AppTheme.spacingM),
+                    padding: const EdgeInsets.all(AppTheme.spacingM),
                     decoration: BoxDecoration(
                       color: AppTheme.surfaceColor,
                       borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),

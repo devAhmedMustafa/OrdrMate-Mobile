@@ -67,7 +67,7 @@ class MenuItemGrid extends StatelessWidget {
                 Expanded(
                   flex: 3,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.vertical(
+                    borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(AppTheme.borderRadiusM),
                     ),
                     child: item.imageUrl != null
@@ -78,7 +78,7 @@ class MenuItemGrid extends StatelessWidget {
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 color: AppTheme.backgroundColor,
-                                child: Icon(
+                                child: const Icon(
                                   Icons.restaurant_menu,
                                   size: 40,
                                   color: AppTheme.textSecondaryColor,
