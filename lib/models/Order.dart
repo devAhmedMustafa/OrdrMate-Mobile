@@ -104,7 +104,7 @@ class Order {
       'items': items?.map((item) => item.toJson()).toList(),
       'orderType': orderType.value,
       'paymentMethod': paymentMethod,
-      'seats': seats,
+      'tableNumber': tableNumber,
       'totalAmount': totalAmount,
     };
   }

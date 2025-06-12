@@ -12,15 +12,23 @@ class OrdersPage extends StatefulWidget {
   State<OrdersPage> createState() => _OrdersPageState();
 }
 
-class _OrdersPageState extends State<OrdersPage> {
+class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateMixin {
   List<Order> _orders = [];
   bool _isLoading = true;
   String? _error;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     _loadOrders();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadOrders() async {
@@ -61,6 +69,47 @@ class _OrdersPageState extends State<OrdersPage> {
       default:
         return AppTheme.primaryColor; // Default purple
     }
+  }
+
+  List<Order> _getReadyOrders() {
+    return _orders.where((order) => 
+      order.status?.toLowerCase() == 'ready' || 
+      order.status?.toLowerCase() == 'delivered'
+    ).toList();
+  }
+
+  List<Order> _getQueuedOrders() {
+    return _orders.where((order) => 
+      order.status?.toLowerCase() == 'queued' ||
+      order.status?.toLowerCase() == 'inprogress'
+    ).toList();
+  }
+
+  Widget _buildOrderList(List<Order> orders) {
+    if (orders.isEmpty) {
+      return const Center(
+        child: Text(
+          'No orders found',
+          style: TextStyle(
+            color: AppTheme.textSecondaryColor,
+            fontSize: 16,
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(AppTheme.spacingM),
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        final order = orders[index];
+        final statusColor = _getStatusColor(order.status ?? 'unknown');
+        return OrderCard(
+          order: order,
+          statusColor: statusColor,
+        );
+      },
+    );
   }
 
   @override
@@ -105,20 +154,8 @@ class _OrdersPageState extends State<OrdersPage> {
       );
     }
 
-    if (_orders.isEmpty) {
-      return Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
-        body: Center(
-          child: Text(
-            'No orders found',
-            style: TextStyle(
-              color: AppTheme.textSecondaryColor,
-              fontSize: 16,
-            ),
-          ),
-        ),
-      );
-    }
+    final readyOrders = _getReadyOrders();
+    final queuedOrders = _getQueuedOrders();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -132,24 +169,51 @@ class _OrdersPageState extends State<OrdersPage> {
         ),
         backgroundColor: AppTheme.surfaceColor,
         elevation: 0,
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadOrders,
-        backgroundColor: AppTheme.surfaceColor,
-        color: AppTheme.primaryColor,
-        child: ListView.builder(
-          padding: const EdgeInsets.all(AppTheme.spacingM),
-          itemCount: _orders.length,
-          itemBuilder: (context, index) {
-            final order = _orders[index];
-            final statusColor = _getStatusColor(order.status ?? 'unknown');
-
-            return OrderCard(
-              order: order,
-              statusColor: statusColor,
-            );
-          },
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppTheme.primaryColor,
+          labelColor: AppTheme.primaryColor,
+          unselectedLabelColor: AppTheme.textSecondaryColor,
+          tabs: const [
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.pending_actions),
+                  SizedBox(width: 8),
+                  Text('Queued Orders'),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.check_circle_outline),
+                  SizedBox(width: 8),
+                  Text('Ready Orders'),
+                ],
+              ),
+            ),
+          ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          RefreshIndicator(
+            onRefresh: _loadOrders,
+            backgroundColor: AppTheme.surfaceColor,
+            color: AppTheme.primaryColor,
+            child: _buildOrderList(queuedOrders),
+          ),
+          RefreshIndicator(
+            onRefresh: _loadOrders,
+            backgroundColor: AppTheme.surfaceColor,
+            color: AppTheme.primaryColor,
+            child: _buildOrderList(readyOrders),
+          ),
+        ],
       ),
     );
   }

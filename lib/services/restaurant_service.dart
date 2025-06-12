@@ -4,10 +4,14 @@ import 'package:ordrmate/models/Branch.dart';
 import 'package:ordrmate/models/Item.dart';
 import 'package:ordrmate/models/Restaurant.dart';
 import 'package:ordrmate/models/Category.dart';
+import 'package:ordrmate/services/auth_service.dart';
 import 'package:ordrmate/utils/ordrmate.api.dart';
 
 class RestaurantService {
 
+  final AuthService _authService;
+
+  RestaurantService(this._authService);
 
   Future<List<Branch>> getAllBranches() async {
     final response = await OrdrmateApi.get('Branch/all');
@@ -23,10 +27,17 @@ class RestaurantService {
   Future<Restaurant> getRestaurantDetails(String restaurantId) async {
     try {
       final response = await OrdrmateApi.get('Restaurant/$restaurantId');
+      final profileResponse = await OrdrmateApi.get('Restaurant/profile/$restaurantId');
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && profileResponse.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        return Restaurant.fromJson(jsonData);
+        final profileData = json.decode(profileResponse.body);
+        final Map<String, String> combinedData = {
+          ...jsonData,
+          ...profileData,
+        };
+
+        return Restaurant.fromJson(combinedData);
       } else {
         throw Exception('Failed to load restaurant details');
       }
@@ -52,7 +63,7 @@ class RestaurantService {
 
   Future<List<Item>> getRestaurantItems(String restaurantId) async {
     try {
-      final response = await OrdrmateApi.get('Item/restaurant/$restaurantId');
+      final response = await OrdrmateApi.get('Item/branch/$restaurantId');
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -80,4 +91,44 @@ class RestaurantService {
     }
   }
 
+  Future<TableWaitingTimeResponse> getMinWaitingTimeForFreeTable(String branchId, int seats) async {
+    try {
+      final token = await _authService.getToken();
+      final response = await OrdrmateApi.get('Table/min_waiting_time/$branchId/$seats', headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      });
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        final tableWaitingTime = TableWaitingTimeResponse.fromJson(jsonData);
+        return tableWaitingTime;
+      } else {
+        throw Exception('Failed to load minimum waiting time for free table');
+      }
+    } catch (e) {
+      throw Exception('Error fetching minimum waiting time for free table: $e');
+    }
+  }
+
+}
+
+class TableWaitingTimeResponse {
+  final int tableNumber;
+  final double waitingTime;
+  final int waitingCount;
+
+  TableWaitingTimeResponse({
+    required this.tableNumber,
+    required this.waitingCount,
+    required this.waitingTime,
+  });
+
+  factory TableWaitingTimeResponse.fromJson(Map<String, dynamic> json) {
+    return TableWaitingTimeResponse(
+      tableNumber: json['tableNumber'] as int,
+      waitingCount: json['waitingCount'] as int,
+      waitingTime: json['waitingTime'] as double,
+    );
+  }
 }

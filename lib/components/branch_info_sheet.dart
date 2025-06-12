@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ordrmate/pages/restaurant_profile_page.dart';
+import 'package:ordrmate/services/auth_service.dart';
+import 'package:provider/provider.dart';
 import '../models/Branch.dart';
 import '../services/restaurant_service.dart';
 import '../ui/theme/app_theme.dart';
@@ -19,7 +21,6 @@ class BranchInfoSheet extends StatefulWidget {
 }
 
 class _BranchInfoSheetState extends State<BranchInfoSheet> {
-  final RestaurantService _restaurantService = RestaurantService();
   BranchInfo? _branchInfo;
   bool _isLoading = true;
   String? _error;
@@ -32,6 +33,8 @@ class _BranchInfoSheetState extends State<BranchInfoSheet> {
 
   Future<void> _loadBranchInfo() async {
     try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final RestaurantService _restaurantService = RestaurantService(authService);
       final branchInfo = await _restaurantService.getBranchInfo(widget.branch.id);
       setState(() {
         _branchInfo = branchInfo;
@@ -140,7 +143,7 @@ class _BranchInfoSheetState extends State<BranchInfoSheet> {
                           Expanded(
                             child: Text(
                               _branchInfo!.restaurantName,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: AppTheme.textPrimaryColor,
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -167,7 +170,7 @@ class _BranchInfoSheetState extends State<BranchInfoSheet> {
                                   ),
                                 );
                               },
-                              child: Icon(
+                              child: const Icon(
                                 Icons.arrow_forward,
                                 color: AppTheme.surfaceColor,
                               ),
@@ -176,23 +179,23 @@ class _BranchInfoSheetState extends State<BranchInfoSheet> {
                         ],
                       ),
                       const SizedBox(height: AppTheme.spacingS),
-                      Row(
-                        children: [
-                          Icon(Icons.star, color: AppTheme.primaryColor),
-                          const SizedBox(width: AppTheme.spacingXS),
-                          Text(
-                            '4.0',
-                            style: TextStyle(
-                              color: AppTheme.textSecondaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Row(
+                      //   children: [
+                      //     Icon(Icons.star, color: AppTheme.primaryColor),
+                      //     const SizedBox(width: AppTheme.spacingXS),
+                      //     Text(
+                      //       '4.0',
+                      //       style: TextStyle(
+                      //         color: AppTheme.textSecondaryColor,
+                      //         fontWeight: FontWeight.bold,
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                       const SizedBox(height: AppTheme.spacingS),
                       Text(
                         'Address: ${_branchInfo!.branchAddress}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppTheme.textPrimaryColor,
                           fontWeight: FontWeight.w500,
                         ),
@@ -201,7 +204,7 @@ class _BranchInfoSheetState extends State<BranchInfoSheet> {
                         const SizedBox(height: AppTheme.spacingXS),
                         Text(
                           'Phone: ${_branchInfo!.branchPhoneNumber}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: AppTheme.textPrimaryColor,
                           ),
                         ),
@@ -209,11 +212,11 @@ class _BranchInfoSheetState extends State<BranchInfoSheet> {
                       const SizedBox(height: AppTheme.spacingL),
                       Row(
                         children: [
-                          Icon(Icons.table_bar, color: AppTheme.textPrimaryColor),
+                          const Icon(Icons.table_bar, color: AppTheme.textPrimaryColor),
                           const SizedBox(width: AppTheme.spacingS),
                           Text(
-                            'Free tables: ${_branchInfo!.freeTables}',
-                            style: TextStyle(
+                            'Free tables: ${_branchInfo!.freeTables}/${_branchInfo!.totalTables}',
+                            style: const TextStyle(
                               color: AppTheme.textPrimaryColor,
                               fontWeight: FontWeight.w500,
                             ),

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ordrmate/components/payment_webview.dart';
+import 'package:ordrmate/enums/payment_methods.dart';
 import 'package:ordrmate/providers/cart_provider.dart';
+import 'package:ordrmate/services/auth_service.dart';
+import 'package:ordrmate/services/restaurant_service.dart';
 import 'package:provider/provider.dart';
 import '../models/Branch.dart';
 import '../models/Order.dart';
@@ -25,12 +29,23 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   bool _isLoading = false;
+  bool _gettingMinWaitingTime = false;
+
   String? _error;
   OrderType _orderType = OrderType.takeaway;
-  String _paymentMethod = 'cash';
+  PaymentMethod _paymentMethod = PaymentMethod.cash;
   int _seats = 1;
 
+  double minWaitingTimeForDineIn = 1.0;
+  int minWaitingCountForDineIn = 0;
+  int bestTableNumber = 0;
+
   Future<void> _placeOrder() async {
+
+    if (_orderType == OrderType.dineIn && bestTableNumber == -1) {
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _error = null;
@@ -39,28 +54,99 @@ class _CheckoutPageState extends State<CheckoutPage> {
     try {
       final orderService = Provider.of<OrderService>(context, listen: false);
       final order = Order(
-        id: '', // This will be set by the server
+        id: '',
+        // This will be set by the server
         branchId: widget.selectedBranch.id,
         items: widget.items.map((item) => item.toOrderItem()).toList(),
         createdAt: DateTime.now(),
         orderType: _orderType,
-        paymentMethod: _paymentMethod,
+        paymentMethod: paymentMethodToString(_paymentMethod),
+        tableNumber: (_orderType == OrderType.dineIn && bestTableNumber != -1) ? bestTableNumber : null,
       );
 
-      await orderService.placeOrder(order);
+      var redirectUrl = await orderService.placeOrder(order);
 
-      if (mounted) {
-        // Clean up the cart after placing the order
-        final cartProvider = Provider.of<CartProvider>(context, listen: false);
-        cartProvider.clearCart(widget.selectedBranch.restaurantId);
-        Navigator.of(context).pop(true); // Return true to indicate success
+      if (!mounted) return;
+
+      // Check if redirect URL is not empty (Not cash payment)
+      if (redirectUrl.isNotEmpty) {
+        final paymentResult = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (context) => PaymentWebView(paymentUrl: redirectUrl),
+          ),
+        );
+
+        if (paymentResult == null || !paymentResult) {
+          setState(() {
+            _isLoading = false;
+            _error = 'Payment failed or cancelled';
+          });
+          return;
+        }
       }
+
+      // Clean up the cart after placing the order
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      cartProvider.clearCart(widget.selectedBranch.restaurantId);
+      Navigator.of(context).pop(true); // Return true to indicate success
     } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
       });
     }
+  }
+
+  Future<TableWaitingTimeResponse> _getMinWaitingTime() async {
+    setState(() {
+      _gettingMinWaitingTime = true;
+      _error = null;
+    });
+
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final restaurantService = RestaurantService(authService);
+      final tableWaiting = await restaurantService.getMinWaitingTimeForFreeTable(
+        widget.selectedBranch.id,
+        _seats,
+      );
+      setState(() {
+        minWaitingTimeForDineIn = tableWaiting.waitingTime;
+        minWaitingCountForDineIn = tableWaiting.waitingCount;
+        bestTableNumber = tableWaiting.tableNumber;
+      });
+
+      return tableWaiting;
+    } catch (e) {
+
+      setState(() {
+        _error = e.toString();
+      });
+
+      throw Exception('Failed to fetch minimum waiting time: $e');
+    }
+
+    finally {
+        setState(() {
+          _gettingMinWaitingTime = false;
+        });
+      }
+    }
+
+  @override
+  void initState() {
+    super.initState();
+    _getMinWaitingTime().then((waiting){
+      setState(() {
+        minWaitingTimeForDineIn = waiting.waitingTime;
+        minWaitingCountForDineIn = waiting.waitingCount;
+        bestTableNumber = waiting.tableNumber;
+      });
+    }).catchError((error) {
+      setState(() {
+        _error = error.toString();
+      });
+    });
   }
 
   @override
@@ -113,6 +199,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               : ListView(
                   padding: const EdgeInsets.all(AppTheme.spacingM),
                   children: [
+
                     // Order type selection
                     AppCard(
                       child: Column(
@@ -174,6 +261,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                     if (_seats > 1) {
                                       setState(() {
                                         _seats--;
+                                        _getMinWaitingTime();
                                       });
                                     }
                                   },
@@ -194,6 +282,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                   onPressed: () {
                                     setState(() {
                                       _seats++;
+                                      _getMinWaitingTime();
                                     });
                                   },
                                   icon: const Icon(
@@ -203,11 +292,109 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: AppTheme.spacingM),
+                            if (_gettingMinWaitingTime)
+                              const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppTheme.primaryColor,
+                                ),
+                              )
+                            else
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: AppTheme.spacingM),
+                                  Text(
+                                    '$minWaitingCountForDineIn reservations in queue',
+                                    style: const TextStyle(
+                                      color: AppTheme.textSecondaryColor,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                const SizedBox(height: AppTheme.spacingS),
+                                Text(
+                                  'Estimated waiting time: ${minWaitingTimeForDineIn.ceil()} minutes',
+                                  style: const TextStyle(
+                                    color: AppTheme.textSecondaryColor,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: AppTheme.spacingS),
+                                if (bestTableNumber == -1)
+                                  const Text(
+                                    'No free tables available at the moment',
+                                    style: TextStyle(
+                                      color: AppTheme.errorColor,
+                                      fontSize: 14,
+                                    ),
+                                  )
+                                else
+                                  Text(
+                                    'Best available table number: $bestTableNumber',
+                                    style: const TextStyle(
+                                      color: AppTheme.textPrimaryColor,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+
+                              ],
+                            ),
                           ],
                         ],
                       ),
                     ),
+
                     const SizedBox(height: AppTheme.spacingM),
+
+                    // Payment method selection
+
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Payment Method',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: AppTheme.spacingM),
+                          RadioListTile<PaymentMethod>(
+                            title: const Text(
+                              'Cash',
+                              style: TextStyle(color: AppTheme.textPrimaryColor),
+                            ),
+                            value: PaymentMethod.cash,
+                            groupValue: _paymentMethod,
+                            activeColor: AppTheme.primaryColor,
+                            onChanged: (value) {
+                              setState(() {
+                                _paymentMethod = value!;
+                              });
+                            },
+                          ),
+                          RadioListTile<PaymentMethod>(
+                            title: const Text(
+                              'Credit/Debit Card',
+                              style: TextStyle(color: AppTheme.textPrimaryColor),
+                            ),
+                            value: PaymentMethod.card,
+                            groupValue: _paymentMethod,
+                            activeColor: AppTheme.primaryColor,
+                            onChanged: (value) {
+                              setState(() {
+                                _paymentMethod = value!;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingM),
+
                     // Order summary
                     AppCard(
                       child: Column(
@@ -300,11 +487,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                   ],
                 ),
+
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppTheme.spacingM),
           child: AppButton(
             text: 'Place Order',
+            icon: Icons.check_circle_outline,
             onPressed: _isLoading ? () {} : () => _placeOrder(),
             isLoading: _isLoading,
           ),

@@ -47,6 +47,7 @@ class BranchInfo {
   final double maxWaitingTime;
   final double averageWaitingTime;
   final int freeTables;
+  final int totalTables;
   final int ordersInQueue;
 
   BranchInfo({
@@ -58,6 +59,7 @@ class BranchInfo {
     required this.maxWaitingTime,
     required this.averageWaitingTime,
     required this.freeTables,
+    required this.totalTables,
     required this.ordersInQueue,
   });
 
@@ -71,6 +73,7 @@ class BranchInfo {
       maxWaitingTime: json['maxWaitingTime'].toDouble(),
       averageWaitingTime: json['averageWaitingTime'].toDouble(),
       freeTables: json['freeTables'],
+      totalTables: json['totalTables'],
       ordersInQueue: json['ordersInQueue'],
     );
   }

@@ -59,6 +59,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _authService.checkAuthStatus();
       final isAuthenticated = _authService.isAuthenticated;
       if (isAuthenticated) {
         _userEmail = await _authService.getEmail();
